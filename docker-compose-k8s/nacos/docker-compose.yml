@@ -1,0 +1,14 @@
+version: '3'
+services:
+  nacos:
+    image: nacos/nacos-server:latest #  替换为你想要部署的Nacos版本号
+    container_name: nacos
+    environment:
+      - MODE=standalone # 指定为单机模式
+      # 其他环境变量如需鉴权可参照Nacos文档添加
+    ports:
+      - "8848:8848"
+    volumes:
+      - ./data/:/home/xiaofei/docker-compose/data/nacos/ # 挂载数据目录以持久化数据
+
+

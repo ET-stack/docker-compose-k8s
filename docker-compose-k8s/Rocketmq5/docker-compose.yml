@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  rmqnamesrv:
+    image: apache/rocketmq:5.0.0
+    container_name: rmqnamesrv
+    ports:
+      - 9876:9876
+    restart: always
+    privileged: true
+    volumes:
+      - /usr/local/rocketmq/logs:/opt/logs
+      - /usr/local/rocketmq/store:/opt/store
+    environment:
+      - MAX_HEAP_SIZE=256M
+      - HEAP_NEWSIZE=128M
+    command: ["sh","mqnamesrv"]
+  broker:
+    image: apache/rocketmq:5.1.0
+    container_name: rmqbroker
+    ports:
+      - 10909:10909
+      - 10911:10911
+    restart: always
+    privileged: true
+    volumes:
+    # 宿主机目录：容器目录
+      - /root/rocketmq5.0/logs:/opt/logs
+      - /root/rocketmq5.0/store:/opt/store
+      - /root/rocketmq5.0/conf/broker.conf:/etc/rocketmq/broker.conf
+    depends_on:
+      - 'rmqnamesrv'
+    environment:
+      - NAMESRV_ADDR=rmqnamesrv:9876
+      - MAX_HEAP_SIZE=512M
+      - HEAP_NEWSIZE=256M
+    command: ["sh","mqbroker","-c","/etc/rocketmq/broker.conf"]
+  rmqdashboard:
+    image: apacherocketmq/rocketmq-dashboard:latest
+    container_name: rocketmq-dashboard
+    ports:
+      - 8080:8080
+    restart: always
+    privileged: true
+    depends_on:
+      - 'rmqnamesrv'
+    environment:
+      - JAVA_OPTS= -Xmx256M -Xms256M -Xmn128M -Drocketmq.namesrv.addr=rmqnamesrv:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false
+
+
